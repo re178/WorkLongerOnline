@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Online Work Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+  header { background: #222; color: white; padding: 10px; text-align: center; }
+  section { padding: 20px; }
+  .hidden { display: none; }
+  .admin-panel { background: #f5f5f5; padding: 15px; border-radius: 8px; margin-top: 20px; }
+  button { padding: 6px 12px; margin: 5px; }
+  input, textarea { width: 100%; margin-bottom: 10px; padding: 8px; }
+  .list { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1 id="siteTitle">Loading...</h1>
+</header>
+
+<section id="publicSection">
+  <h2 id="introTitle">Welcome</h2>
+  <p id="introText">Please wait...</p>
+  <div id="sectionsContainer"></div>
+
+  <h3>Ebooks</h3>
+  <div id="ebooksContainer"></div>
+
+  <h3>Affiliates</h3>
+  <div id="affiliatesContainer"></div>
+
+  <h3 id="getClientsDesc">Join our client list</h3>
+  <form id="clientForm">
+    <input type="text" id="clientName" placeholder="Your Name" required>
+    <input type="email" id="clientEmail" placeholder="Your Email" required>
+    <input type="text" id="clientCountry" placeholder="Your Country" required>
+    <input type="text" id="clientSkills" placeholder="Your Skills" required>
+    <button type="submit">Submit</button>
+  </form>
+</section>
+
+<section id="loginSection" class="hidden">
+  <h2>Admin Login</h2>
+  <input type="text" id="adminUser" placeholder="Username">
+  <input type="password" id="adminPass" placeholder="Password">
+  <button id="loginBtn">Login</button>
+</section>
+
+<section id="adminSection" class="hidden">
+  <div class="admin-panel">
+    <h2>Admin Dashboard</h2>
+    <label>Site Title</label>
+    <input id="editSiteTitle" type="text">
+    <label>Intro Title</label>
+    <input id="editIntroTitle" type="text">
+    <label>Intro Text</label>
+    <textarea id="editIntroText"></textarea>
+
+    <h3>Sections</h3>
+    <div id="adminSections"></div>
+    <button id="addSection">Add Section</button>
+
+    <h3>Ebooks</h3>
+    <div id="adminEbooks"></div>
+    <button id="addEbook">Add Ebook</button>
+
+    <h3>Affiliates</h3>
+    <div id="adminAffiliates"></div>
+    <button id="addAffiliate">Add Affiliate</button>
+
+    <h3>Get Clients Description</h3>
+    <input id="editGetClientsDesc" type="text">
+
+    <button id="saveChanges">Save Changes</button>
+    <button id="downloadClients">Download Clients CSV</button>
+  </div>
+</section>
+
+<!-- Firebase App (modular) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+
+<script>
+  // Your Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyD1kCv4_Lf9nHh1I7OwMA4lfVWAlpte7gs",
+    authDomain: "onlineworkdata-9e3b3.firebaseapp.com",
+    projectId: "onlineworkdata-9e3b3",
+    storageBucket: "onlineworkdata-9e3b3.firebasestorage.app",
+    messagingSenderId: "155992046130",
+    appId: "1:155992046130:web:01e0d085c5dd43cc889a2b"
+  };
+
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  let siteData = {};
+  let adminLoggedIn = false;
+
+  // Load site data
+  function loadSite() {
+    db.collection("siteData").doc("main").get().then(doc => {
+      if(doc.exists) {
+        siteData = doc.data();
+        document.getElementById("siteTitle").innerText = siteData.title;
+        document.getElementById("introTitle").innerText = siteData.introTitle;
+        document.getElementById("introText").innerText = siteData.introText;
+        document.getElementById("getClientsDesc").innerText = siteData.getClientsDesc;
+        renderPublicSections();
+      }
+    });
+  }
+
+  function renderPublicSections() {
+    let secHTML = "";
+    (siteData.sections || []).forEach(s => {
+      secHTML += `<div class="list"><h4>${s.title}</h4><p>${s.text}</p></div>`;
+    });
+    document.getElementById("sectionsContainer").innerHTML = secHTML;
+
+    let ebooksHTML = "";
+    (siteData.ebooks || []).forEach(e => {
+      ebooksHTML += `<div class="list"><a href="${e.link}" target="_blank">${e.title}</a></div>`;
+    });
+    document.getElementById("ebooksContainer").innerHTML = ebooksHTML;
+
+    let affHTML = "";
+    (siteData.affiliates || []).forEach(a => {
+      affHTML += `<div class="list"><a href="${a.url}" target="_blank">${a.name}</a></div>`;
+    });
+    document.getElementById("affiliatesContainer").innerHTML = affHTML;
+  }
+
+  // Admin login
+  document.getElementById("loginBtn").onclick = () => {
+    const user = document.getElementById("adminUser").value;
+    const pass = document.getElementById("adminPass").value;
+    if(user === siteData.adminUsername && pass === siteData.adminPassword) {
+      adminLoggedIn = true;
+      showAdmin();
+    } else {
+      alert("Invalid credentials");
+    }
+  };
+
+  function showAdmin() {
+    document.getElementById("publicSection").classList.add("hidden");
+    document.getElementById("loginSection").classList.add("hidden");
+    document.getElementById("adminSection").classList.remove("hidden");
+
+    document.getElementById("editSiteTitle").value = siteData.title;
+    document.getElementById("editIntroTitle").value = siteData.introTitle;
+    document.getElementById("editIntroText").value = siteData.introText;
+    document.getElementById("editGetClientsDesc").value = siteData.getClientsDesc;
+
+    renderAdminLists();
+  }
+
+  function renderAdminLists() {
+    let secHTML = "";
+    (siteData.sections || []).forEach((s, i) => {
+      secHTML += `<div>
+        <input value="${s.title}" onchange="siteData.sections[${i}].title=this.value">
+        <textarea onchange="siteData.sections[${i}].text=this.value">${s.text}</textarea>
+        <button onclick="deleteSection(${i})">Delete</button>
+      </div>`;
+    });
+    document.getElementById("adminSections").innerHTML = secHTML;
+
+    let ebooksHTML = "";
+    (siteData.ebooks || []).forEach((e, i) => {
+      ebooksHTML += `<div>
+        <input value="${e.title}" onchange="siteData.ebooks[${i}].title=this.value">
+        <input value="${e.link}" onchange="siteData.ebooks[${i}].link=this.value">
+        <button onclick="deleteEbook(${i})">Delete</button>
+      </div>`;
+    });
+    document.getElementById("adminEbooks").innerHTML = ebooksHTML;
+
+    let affHTML = "";
+    (siteData.affiliates || []).forEach((a, i) => {
+      affHTML += `<div>
+        <input value="${a.name}" onchange="siteData.affiliates[${i}].name=this.value">
+        <input value="${a.url}" onchange="siteData.affiliates[${i}].url=this.value">
+        <button onclick="deleteAffiliate(${i})">Delete</button>
+      </div>`;
+    });
+    document.getElementById("adminAffiliates").innerHTML = affHTML;
+  }
+
+  function deleteSection(i) { siteData.sections.splice(i, 1); renderAdminLists(); }
+  function deleteEbook(i) { siteData.ebooks.splice(i, 1); renderAdminLists(); }
+  function deleteAffiliate(i) { siteData.affiliates.splice(i, 1); renderAdminLists(); }
+
+  document.getElementById("addSection").onclick = () => {
+    siteData.sections.push({title:"New Section", text:""});
+    renderAdminLists();
+  };
+  document.getElementById("addEbook").onclick = () => {
+    siteData.ebooks.push({title:"New Ebook", link:""});
+    renderAdminLists();
+  };
+  document.getElementById("addAffiliate").onclick = () => {
+    siteData.affiliates.push({name:"New Affiliate", url:""});
+    renderAdminLists();
+  };
+
+  // Save changes
+  document.getElementById("saveChanges").onclick = () => {
+    siteData.title = document.getElementById("editSiteTitle").value;
+    siteData.introTitle = document.getElementById("editIntroTitle").value;
+    siteData.introText = document.getElementById("editIntroText").value;
+    siteData.getClientsDesc = document.getElementById("editGetClientsDesc").value;
+    db.collection("siteData").doc("main").set(siteData).then(() => {
+      alert("Changes saved!");
+      loadSite();
+    });
+  };
+
+  // Submit client form
+  document.getElementById("clientForm").onsubmit = (e) => {
+    e.preventDefault();
+    db.collection("clients").add({
+      name: document.getElementById("clientName").value,
+      email: document.getElementById("clientEmail").value,
+      country: document.getElementById("clientCountry").value,
+      skills: document.getElementById("clientSkills").value,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+      alert("Client data submitted");
+      e.target.reset();
+    });
+  };
+
+  // Download clients CSV
+  document.getElementById("downloadClients").onclick = () => {
+    db.collection("clients").get().then(snapshot => {
+      let csv = "Name,Email,Country,Skills,Timestamp\n";
+      snapshot.forEach(doc => {
+        let c = doc.data();
+        csv += `${c.name},${c.email},${c.country},${c.skills},${c.timestamp?.toDate()}\n`;
+      });
+      let blob = new Blob([csv], { type: "text/csv" });
+      let url = URL.createObjectURL(blob);
+      let a = document.createElement("a");
+      a.href = url;
+      a.download = "clients.csv";
+      a.click();
+    });
+  };
+
+  loadSite();
+</script>
+</body>
+</html>
