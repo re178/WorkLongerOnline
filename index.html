@@ -58,32 +58,27 @@
     <input id="editIntroTitle" type="text">
     <label>Intro Text</label>
     <textarea id="editIntroText"></textarea>
-
     <h3>Sections</h3>
     <div id="adminSections"></div>
     <button id="addSection">Add Section</button>
-
     <h3>Ebooks</h3>
     <div id="adminEbooks"></div>
     <button id="addEbook">Add Ebook</button>
-
     <h3>Affiliates</h3>
     <div id="adminAffiliates"></div>
     <button id="addAffiliate">Add Affiliate</button>
-
     <h3>Get Clients Description</h3>
     <input id="editGetClientsDesc" type="text">
-
     <button id="saveChanges">Save Changes</button>
     <button id="downloadClients">Download Clients CSV</button>
   </div>
 </section>
-
 <!-- Firebase App (modular) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
-
 <script>
+  import { initializeApp } from "firebase/app";
+import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
   // Your Firebase configuration
   const firebaseConfig = {
     apiKey: "AIzaSyD1kCv4_Lf9nHh1I7OwMA4lfVWAlpte7gs",
@@ -93,10 +88,13 @@
     messagingSenderId: "155992046130",
     appId: "1:155992046130:web:01e0d085c5dd43cc889a2b"
   };
-
   const app = firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
-
+// Add App Check with your site key
+const appCheck = initializeAppCheck(app, {
+  provider: new ReCaptchaV3Provider: "6LcZQqMrAAAAAHMEt58tFbbOexDuoTbBb46zwMY5",
+  isTokenAutoRefreshEnabled: true
+});
   let siteData = {};
   let adminLoggedIn = false;
 
@@ -256,3 +254,4 @@
 </script>
 </body>
 </html>
+
