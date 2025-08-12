@@ -1,257 +1,630 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Online Work Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Start Online Work</title>
 <style>
-  body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-  header { background: #222; color: white; padding: 10px; text-align: center; }
-  section { padding: 20px; }
-  .hidden { display: none; }
-  .admin-panel { background: #f5f5f5; padding: 15px; border-radius: 8px; margin-top: 20px; }
-  button { padding: 6px 12px; margin: 5px; }
-  input, textarea { width: 100%; margin-bottom: 10px; padding: 8px; }
-  .list { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; }
+  :root{
+    --bg:#f4f7fb; --card:#ffffff; --muted:#6b7280; --brand:#0b5ed7;
+    --accent:#2a9df4; --danger:#e53935; --success:#16a34a;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,Arial,sans-serif;margin:0;background:var(--bg);color:#0b1320}
+  header{background:linear-gradient(90deg,var(--brand),var(--accent));color:#fff;padding:20px 16px;text-align:center}
+  header h1{margin:0;font-size:20px}
+  .wrap{max-width:1100px;margin:18px auto;padding:12px}
+  .grid{display:grid;grid-template-columns:1fr;gap:16px}
+  .card{background:var(--card);border-radius:12px;padding:14px;box-shadow:0 8px 22px rgba(10,20,40,0.06)}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  button,input,textarea,select{font-family:inherit}
+  .btn{background:var(--brand);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+  .btn.ghost{background:transparent;color:var(--brand);border:1px solid rgba(11,94,215,0.12)}
+  .btn.danger{background:var(--danger);color:#fff}
+  .muted{color:var(--muted);font-size:13px}
+  h2,h3{margin:0 0 8px 0}
+  label{display:block;margin-top:8px;color:#243044;font-weight:600;font-size:14px}
+  input[type="text"],input[type="url"],input[type="password"],select,textarea{
+    width:100%;padding:8px;border-radius:8px;border:1px solid #e6eef8;background:#fbfdff;margin-top:6px
+  }
+  .list-item{border:1px dashed #e6eef8;padding:10px;border-radius:8px;margin-top:8px;background:#fcfeff}
+  .small-muted{font-size:13px;color:var(--muted)}
+  footer{padding:12px;text-align:center;color:var(--muted);font-size:13px;margin-top:12px}
+
+  /* Admin layout */
+  .admin-panel{display:none}
+  .admin-controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .section-img{max-width:100%;height:auto;border-radius:8px;margin-top:8px;display:block}
+
+  /* Responsive */
+  @media(min-width:900px){.grid{grid-template-columns:1fr 380px}}
+  .hidden{display:none}
+  .file-input{padding:6px;border-radius:8px;border:1px dashed #e6eef8;background:#fff}
+  .controls-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+  .mini{padding:6px 8px;font-size:13px;border-radius:6px}
 </style>
 </head>
 <body>
 
 <header>
-  <h1 id="siteTitle">Loading...</h1>
+  <h1 id="siteTitle">Start Online Work</h1>
+  <div style="margin-top:8px">
+    <button class="btn" id="openLoginBtn">Admin Login</button>
+    <button class="btn ghost" id="previewBtn">Preview Visitor</button>
+  </div>
 </header>
 
-<section id="publicSection">
-  <h2 id="introTitle">Welcome</h2>
-  <p id="introText">Please wait...</p>
-  <div id="sectionsContainer"></div>
+<div class="wrap grid">
+  <!-- PUBLIC VIEW -->
+  <main class="card" id="visitorView">
+    <h2 id="introTitle">How to Start Online Work</h2>
+    <p id="introText" class="muted">Simple, practical ways for you to begin earning online — freelancing, remote jobs, and small online businesses.</p>
 
-  <h3>Ebooks</h3>
-  <div id="ebooksContainer"></div>
+    <div id="sectionsArea"></div>
 
-  <h3>Affiliates</h3>
-  <div id="affiliatesContainer"></div>
+    <h3>eBooks & Guides</h3>
+    <div id="ebooksArea"></div>
 
-  <h3 id="getClientsDesc">Join our client list</h3>
-  <form id="clientForm">
-    <input type="text" id="clientName" placeholder="Your Name" required>
-    <input type="email" id="clientEmail" placeholder="Your Email" required>
-    <input type="text" id="clientCountry" placeholder="Your Country" required>
-    <input type="text" id="clientSkills" placeholder="Your Skills" required>
-    <button type="submit">Submit</button>
-  </form>
-</section>
+    <h3>Recommended Tools & Courses</h3>
+    <div id="affiliatesArea"></div>
 
-<section id="loginSection" class="hidden">
-  <h2>Admin Login</h2>
-  <input type="text" id="adminUser" placeholder="Username">
-  <input type="password" id="adminPass" placeholder="Password">
-  <button id="loginBtn">Login</button>
-</section>
+    <h3>Want clients? Click below to sign up</h3>
+    <div class="card" id="getClientsCard">
+      <p class="muted" id="getClientsDesc">Sign up and we will send you leads and tips.</p>
+      <button class="btn" id="openGetClientsBtn">Click here to get clients</button>
+    </div>
 
-<section id="adminSection" class="hidden">
-  <div class="admin-panel">
+    <div style="margin-top:12px" id="hiddenButtonsArea"></div>
+
+    <hr style="margin:18px 0;border:none;border-top:1px solid #eef6ff" />
+    <p class="muted center">This demo stores data in your Firestore. Save & upload to GitHub Pages later to make it public</p>
+  </main>
+
+  <!-- ADMIN PANEL -->
+  <aside class="card admin-panel" id="adminPanel">
     <h2>Admin Dashboard</h2>
-    <label>Site Title</label>
-    <input id="editSiteTitle" type="text">
-    <label>Intro Title</label>
-    <input id="editIntroTitle" type="text">
-    <label>Intro Text</label>
-    <textarea id="editIntroText"></textarea>
+    <small class="muted">Logged in as <b id="adminNameLabel"></b></small>
+    <hr/>
+
+    <label>Site Title<input id="adminSiteTitle" type="text" placeholder="Site Title"></label>
+    <label>Intro Title<input id="adminIntroTitle" type="text" placeholder="Intro Title"></label>
+    <label>Intro Text<textarea id="adminIntroText" placeholder="Short intro"></textarea></label>
+
     <h3>Sections</h3>
-    <div id="adminSections"></div>
-    <button id="addSection">Add Section</button>
-    <h3>Ebooks</h3>
-    <div id="adminEbooks"></div>
-    <button id="addEbook">Add Ebook</button>
+    <div id="sectionsAdmin"></div>
+    <div class="controls-row"><button class="btn ghost mini" id="addSectionBtn">+ Add Section</button></div>
+
+    <h3>eBooks</h3>
+    <div id="ebooksAdmin"></div>
+    <div class="controls-row"><button class="btn ghost mini" id="addEbookBtn">+ Add eBook</button></div>
+
     <h3>Affiliates</h3>
-    <div id="adminAffiliates"></div>
-    <button id="addAffiliate">Add Affiliate</button>
-    <h3>Get Clients Description</h3>
-    <input id="editGetClientsDesc" type="text">
-    <button id="saveChanges">Save Changes</button>
-    <button id="downloadClients">Download Clients CSV</button>
+    <div id="affiliatesAdmin"></div>
+    <div class="controls-row"><button class="btn ghost mini" id="addAffiliateBtn">+ Add Affiliate</button></div>
+
+    <h3>Hidden Buttons</h3>
+    <div id="hiddenButtonsAdmin"></div>
+    <div class="controls-row"><button class="btn ghost mini" id="addHiddenBtn">+ Add Hidden Button</button></div>
+
+    <h3>Get Clients Form</h3>
+    <label>Form description<textarea id="adminGetClientsDesc" placeholder="Text shown above the button"></textarea></label>
+
+    <div class="admin-controls">
+      <button class="btn" id="saveSettingsBtn">Save Settings</button>
+      <button class="btn ghost" id="exportDataBtn">Export Data (JSON)</button>
+      <button class="btn mini" id="downloadClientsBtn">Download Clients CSV</button>
+      <button class="btn danger" id="clearAllBtn">Delete ALL (reset)</button>
+      <button class="btn ghost" id="logoutBtn">Logout</button>
+    </div>
+
+    <hr/>
+    <small class="muted">Notes: Images uploaded via admin are saved to Firebase Storage and displayed in sections.</small>
+  </aside>
+</div>
+
+<!-- LOGIN MODAL -->
+<div id="loginModal" class="card" style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:380px;display:none;z-index:90">
+  <h3 class="center">Admin Login</h3>
+  <label>Username<input id="loginUser" type="text" /></label>
+  <label>Password<input id="loginPass" type="password" /></label>
+  <div style="display:flex;gap:8px;margin-top:8px">
+    <button class="btn" id="doLoginBtn">Login</button>
+    <button class="btn ghost" id="cancelLoginBtn">Cancel</button>
   </div>
-</section>
-<!-- Firebase App (modular) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+  <div id="loginMsg" class="muted" style="margin-top:8px"></div>
+</div>
+
+<!-- GET CLIENTS MODAL -->
+<div id="clientsModal" class="card" style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:460px;display:none;z-index:100">
+  <h3 class="center">Get Clients - Sign Up</h3>
+  <label>Name<input id="clientName" type="text" /></label>
+  <label>Email<input id="clientEmail" type="email" /></label>
+  <label>Country
+    <select id="clientCountry">
+      <option value="">Select country</option>
+      <option>Kenya</option><option>Nigeria</option><option>Ghana</option><option>Uganda</option><option>Tanzania</option>
+      <option>South Africa</option><option>Egypt</option><option>Other</option>
+    </select>
+  </label>
+  <label>Skills (choose up to 2)
+    <select id="clientSkills" multiple size="4">
+      <option>Data entry</option><option>Writing</option><option>Graphic design</option><option>Social media</option>
+      <option>Web development</option><option>Virtual assistant</option><option>Translation</option><option>Other</option>
+    </select>
+  </label>
+  <div style="display:flex;gap:8px;margin-top:10px">
+    <button class="btn" id="submitClientBtn">Submit</button>
+    <button class="btn ghost" id="cancelClientBtn">Cancel</button>
+  </div>
+  <div id="clientMsg" class="muted" style="margin-top:8px"></div>
+</div>
+
+<footer>Made for quick testing • Save & upload to GitHub Pages later to make it public</footer>
+
+<!-- Firebase compat SDKs (works on GitHub Pages without npm) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-check-compat.js"></script>
+
 <script>
-  import { initializeApp } from "firebase/app";
-import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
-  // Your Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyD1kCv4_Lf9nHh1I7OwMA4lfVWAlpte7gs",
-    authDomain: "onlineworkdata-9e3b3.firebaseapp.com",
-    projectId: "onlineworkdata-9e3b3",
-    storageBucket: "onlineworkdata-9e3b3.firebasestorage.app",
-    messagingSenderId: "155992046130",
-    appId: "1:155992046130:web:01e0d085c5dd43cc889a2b"
-  };
-  const app = firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-// Add App Check with your site key
-const appCheck = initializeAppCheck(app, {
-  provider: new ReCaptchaV3Provider: "6LcZQqMrAAAAAHMEt58tFbbOexDuoTbBb46zwMY5",
+/* ============================
+   CONFIG - paste your config
+   (you already provided this earlier)
+   ============================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyD1kCv4_Lf9nHh1I7OwMA4lfVWAlpte7gs",
+  authDomain: "onlineworkdata-9e3b3.firebaseapp.com",
+  projectId: "onlineworkdata-9e3b3",
+  storageBucket: "onlineworkdata-9e3b3.firebasestorage.app",
+  messagingSenderId: "155992046130",
+  appId: "1:155992046130:web:01e0d085c5dd43cc889a2b"
+};
+
+// initialize firebase
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+// App Check (reCAPTCHA v3) - site key from your file
+// Replace provider key if you use a different one; keeping the key you had:
+firebase.appCheck().initializeAppCheck(app, {
+  provider: new firebase.appCheck.ReCaptchaV3Provider('6LcZQqMrAAAAAHMEt58tFbbOexDuoTbBb46zwMY5'),
   isTokenAutoRefreshEnabled: true
 });
-  let siteData = {};
-  let adminLoggedIn = false;
 
-  // Load site data
-  function loadSite() {
-    db.collection("siteData").doc("main").get().then(doc => {
-      if(doc.exists) {
-        siteData = doc.data();
-        document.getElementById("siteTitle").innerText = siteData.title;
-        document.getElementById("introTitle").innerText = siteData.introTitle;
-        document.getElementById("introText").innerText = siteData.introText;
-        document.getElementById("getClientsDesc").innerText = siteData.getClientsDesc;
-        renderPublicSections();
+/* ============================
+   App logic
+   ============================ */
+
+let SITE_DOC = 'main';
+let siteData = null;
+let adminLoggedInUser = null;
+
+// UTILS
+function qs(id){ return document.getElementById(id) }
+function idGen(){ return 'id'+Math.random().toString(36).slice(2,9) }
+function escapeHtml(str){ if(!str) return ''; return String(str).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;') }
+
+/* ======= LOAD SITE DATA ======= */
+async function ensureSiteDoc(){
+  const docRef = db.collection('siteData').doc(SITE_DOC);
+  const doc = await docRef.get();
+  if(!doc.exists){
+    const defaultSite = {
+      title: "Start Online Work",
+      introTitle: "How to Start Online Work",
+      introText: "Simple, practical ways for you to begin earning online — freelancing, remote jobs, and small online businesses.",
+      sections: [
+        { id:idGen(), title:"Freelancing", text:"Work for clients worldwide using your skills.", img:"" },
+        { id:idGen(), title:"Remote Jobs", text:"Get hired by companies to work from home.", img:"" }
+      ],
+      ebooks: [],
+      affiliates: [],
+      hiddenButtons: [],
+      getClientsDesc: "Sign up and we will send you leads and tips.",
+      adminUsername: "siteadmin",
+      adminPassword: "EDSG11486@42034318re"
+    };
+    await docRef.set(defaultSite);
+    return defaultSite;
+  } else {
+    return doc.data();
+  }
+}
+
+async function loadSite(){
+  try{
+    siteData = await ensureSiteDoc();
+    renderAll();
+  }catch(err){
+    console.error('loadSite error', err);
+    alert('Failed to load site data: '+err.message);
+  }
+}
+
+/* ======= RENDER PUBLIC ======= */
+function renderAll(){
+  if(!siteData) return;
+  qs('siteTitle').innerText = siteData.title || '';
+  qs('introTitle').innerText = siteData.introTitle || '';
+  qs('introText').innerText = siteData.introText || '';
+  qs('getClientsDesc').innerText = siteData.getClientsDesc || '';
+
+  // sections
+  const secArea = qs('sectionsArea'); secArea.innerHTML = '';
+  (siteData.sections || []).forEach(s=>{
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.style.marginTop = '10px';
+    div.innerHTML = `<h3>${escapeHtml(s.title)}</h3>
+      ${s.img?`<img src="${escapeHtml(s.img)}" class="section-img" alt="">`:''}
+      <p class="muted" style="margin-top:8px">${escapeHtml(s.text)}</p>`;
+    secArea.appendChild(div);
+  });
+
+  // ebooks
+  const ebArea = qs('ebooksArea'); ebArea.innerHTML = '';
+  (siteData.ebooks||[]).forEach(e=>{
+    const el = document.createElement('div'); el.className='list-item';
+    el.innerHTML = `<div><strong>${escapeHtml(e.title)}</strong><div class="muted">${escapeHtml(e.desc||'')}</div></div>
+      <div style="margin-top:8px"><a class="btn mini" href="${escapeHtml(e.hiddenLink||'#')}" target="_blank">Get Book</a></div>`;
+    ebArea.appendChild(el);
+  });
+
+  // affiliates
+  const afArea = qs('affiliatesArea'); afArea.innerHTML = '';
+  (siteData.affiliates||[]).forEach(a=>{
+    const el = document.createElement('div'); el.className='list-item';
+    el.innerHTML = `<div><strong>${escapeHtml(a.title)}</strong><div class="muted">${escapeHtml(a.desc||'')}</div></div>
+      <div style="margin-top:8px"><a class="btn mini" href="${escapeHtml(a.hiddenLink||'#')}" target="_blank">Open</a></div>`;
+    afArea.appendChild(el);
+  });
+
+  // hidden buttons
+  const hbArea = qs('hiddenButtonsArea'); hbArea.innerHTML = '';
+  (siteData.hiddenButtons||[]).forEach(b=>{
+    const btn = document.createElement('button'); btn.className='btn ghost mini'; btn.style.marginRight='6px';
+    btn.innerText = b.label || 'Hidden';
+    btn.onclick = ()=> window.open(b.hiddenLink||'#','_blank');
+    hbArea.appendChild(btn);
+  });
+
+  // admin panel populate if visible
+  if(qs('adminPanel').style.display !== 'none'){
+    populateAdminForm();
+  }
+}
+
+/* ======= ADMIN UI ======= */
+function showLogin(){ qs('loginModal').style.display='block'; qs('loginUser').value=''; qs('loginPass').value=''; qs('loginMsg').innerText=''; }
+function closeLogin(){ qs('loginModal').style.display='none'; }
+
+function doLogin(){
+  const user = qs('loginUser').value.trim();
+  const pass = qs('loginPass').value;
+  if(!siteData){ qs('loginMsg').innerText='Site data not loaded'; return; }
+  if(user === (siteData.adminUsername || '') && pass === (siteData.adminPassword || '')){
+    qs('loginModal').style.display='none';
+    qs('adminPanel').style.display='block';
+    qs('adminNameLabel').innerText = user;
+    populateAdminForm();
+    addAdminExtras(); // show download button etc
+    window.scrollTo(0,0);
+  } else {
+    qs('loginMsg').innerText = 'Wrong credentials';
+  }
+}
+
+function logoutAdmin(){
+  qs('adminPanel').style.display='none';
+  qs('adminNameLabel').innerText = '';
+}
+
+/* Populate admin inputs & lists */
+function populateAdminForm(){
+  qs('adminSiteTitle').value = siteData.title || '';
+  qs('adminIntroTitle').value = siteData.introTitle || '';
+  qs('adminIntroText').value = siteData.introText || '';
+  qs('adminGetClientsDesc').value = siteData.getClientsDesc || '';
+
+  // sections admin
+  const sCont = qs('sectionsAdmin'); sCont.innerHTML='';
+  (siteData.sections||[]).forEach((s, idx)=>{
+    const d = document.createElement('div'); d.className='list-item';
+    d.innerHTML = `
+      <label>Title<input type="text" class="sec-title" data-idx="${idx}" value="${escapeHtml(s.title)}"></label>
+      <label>Text<textarea class="sec-text" data-idx="${idx}">${escapeHtml(s.text)}</textarea></label>
+      <label>Image (optional)</label>
+      ${s.img?`<img src="${escapeHtml(s.img)}" class="section-img">`:''}
+      <input type="file" class="sec-img-input" data-idx="${idx}">
+      <div style="margin-top:8px" class="controls-row">
+        <button class="btn mini" data-action="save-section" data-idx="${idx}">Save</button>
+        <button class="btn ghost mini" data-action="edit-section" data-idx="${idx}">Quick Edit</button>
+        <button class="btn danger mini" data-action="delete-section" data-idx="${idx}">Delete</button>
+      </div>`;
+    sCont.appendChild(d);
+  });
+
+  // ebooks admin
+  const ebCont = qs('ebooksAdmin'); ebCont.innerHTML='';
+  (siteData.ebooks||[]).forEach((e, idx)=>{
+    const d = document.createElement('div'); d.className='list-item';
+    d.innerHTML = `
+      <label>Title<input type="text" class="ebook-title" data-idx="${idx}" value="${escapeHtml(e.title)}"></label>
+      <label>Description<textarea class="ebook-desc" data-idx="${idx}">${escapeHtml(e.desc||'')}</textarea></label>
+      <label>Hidden Link<input type="url" class="ebook-link" data-idx="${idx}" value="${escapeHtml(e.hiddenLink||'')}" /></label>
+      <div style="margin-top:8px" class="controls-row">
+        <button class="btn mini" data-action="save-ebook" data-idx="${idx}">Save</button>
+        <button class="btn danger mini" data-action="delete-ebook" data-idx="${idx}">Delete</button>
+      </div>`;
+    ebCont.appendChild(d);
+  });
+
+  // affiliates admin
+  const afCont = qs('affiliatesAdmin'); afCont.innerHTML='';
+  (siteData.affiliates||[]).forEach((a, idx)=>{
+    const d = document.createElement('div'); d.className='list-item';
+    d.innerHTML = `
+      <label>Title<input type="text" class="aff-title" data-idx="${idx}" value="${escapeHtml(a.title)}"></label>
+      <label>Description<textarea class="aff-desc" data-idx="${idx}">${escapeHtml(a.desc||'')}</textarea></label>
+      <label>Hidden Link<input type="url" class="aff-link" data-idx="${idx}" value="${escapeHtml(a.hiddenLink||'')}" /></label>
+      <div style="margin-top:8px" class="controls-row">
+        <button class="btn mini" data-action="save-aff" data-idx="${idx}">Save</button>
+        <button class="btn danger mini" data-action="delete-aff" data-idx="${idx}">Delete</button>
+      </div>`;
+    afCont.appendChild(d);
+  });
+
+  // hidden buttons admin
+  const hbCont = qs('hiddenButtonsAdmin'); hbCont.innerHTML='';
+  (siteData.hiddenButtons||[]).forEach((b, idx)=>{
+    const d = document.createElement('div'); d.className='list-item';
+    d.innerHTML = `
+      <label>Label<input type="text" class="hb-label" data-idx="${idx}" value="${escapeHtml(b.label||'')}"></label>
+      <label>Hidden Link<input type="url" class="hb-link" data-idx="${idx}" value="${escapeHtml(b.hiddenLink||'')}" /></label>
+      <div style="margin-top:8px" class="controls-row">
+        <button class="btn mini" data-action="save-hb" data-idx="${idx}">Save</button>
+        <button class="btn danger mini" data-action="delete-hb" data-idx="${idx}">Delete</button>
+      </div>`;
+    hbCont.appendChild(d);
+  });
+
+  attachAdminHandlers();
+}
+
+/* Attach event delegation for admin controls */
+function attachAdminHandlers(){
+  // Sections controls
+  qs('sectionsAdmin').querySelectorAll('[data-action]').forEach(btn=>{
+    btn.onclick = async (e)=>{
+      const action = btn.getAttribute('data-action');
+      const idx = Number(btn.getAttribute('data-idx'));
+      if(action==='delete-section'){ if(!confirm('Delete this section?')) return; siteData.sections.splice(idx,1); await saveSiteData(); populateAdminForm(); renderAll(); return;}
+      if(action==='save-section'){
+         // read values from inputs with matching data-idx
+         const container = btn.closest('.list-item');
+         const title = container.querySelector('.sec-title').value;
+         const text = container.querySelector('.sec-text').value;
+         siteData.sections[idx].title = title;
+         siteData.sections[idx].text = text;
+         const fileInput = container.querySelector('.sec-img-input');
+         if(fileInput && fileInput.files && fileInput.files[0]){
+           // upload
+           try{
+             const url = await uploadSectionImage(fileInput.files[0], siteData.sections[idx].id);
+             siteData.sections[idx].img = url;
+           }catch(err){ alert('Image upload failed: '+err.message); console.error(err); }
+         }
+         await saveSiteData(); populateAdminForm(); renderAll();
       }
-    });
+      if(action==='edit-section'){ // quick prompt edit
+        const s = siteData.sections[idx];
+        const title = prompt("Section title:", s.title); if(title===null) return;
+        const text = prompt("Section text:", s.text); if(text===null) return;
+        s.title = title; s.text = text;
+        await saveSiteData(); populateAdminForm(); renderAll();
+      }
+    };
+  });
+
+  // Ebooks controls
+  qs('ebooksAdmin').querySelectorAll('[data-action]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const action = btn.getAttribute('data-action');
+      const idx = Number(btn.getAttribute('data-idx'));
+      if(action==='delete-ebook'){ if(!confirm('Delete this ebook?')) return; siteData.ebooks.splice(idx,1); await saveSiteData(); populateAdminForm(); renderAll(); return; }
+      if(action==='save-ebook'){
+        const container = btn.closest('.list-item');
+        siteData.ebooks[idx].title = container.querySelector('.ebook-title').value;
+        siteData.ebooks[idx].desc = container.querySelector('.ebook-desc').value;
+        siteData.ebooks[idx].hiddenLink = container.querySelector('.ebook-link').value;
+        await saveSiteData(); populateAdminForm(); renderAll();
+      }
+    };
+  });
+
+  // Affiliates controls
+  qs('affiliatesAdmin').querySelectorAll('[data-action]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const action = btn.getAttribute('data-action');
+      const idx = Number(btn.getAttribute('data-idx'));
+      if(action==='delete-aff'){ if(!confirm('Delete this affiliate?')) return; siteData.affiliates.splice(idx,1); await saveSiteData(); populateAdminForm(); renderAll(); return; }
+      if(action==='save-aff'){
+        const container = btn.closest('.list-item');
+        siteData.affiliates[idx].title = container.querySelector('.aff-title').value;
+        siteData.affiliates[idx].desc = container.querySelector('.aff-desc').value;
+        siteData.affiliates[idx].hiddenLink = container.querySelector('.aff-link').value;
+        await saveSiteData(); populateAdminForm(); renderAll();
+      }
+    };
+  });
+
+  // Hidden buttons
+  qs('hiddenButtonsAdmin').querySelectorAll('[data-action]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const action = btn.getAttribute('data-action');
+      const idx = Number(btn.getAttribute('data-idx'));
+      if(action==='delete-hb'){ if(!confirm('Delete this button?')) return; siteData.hiddenButtons.splice(idx,1); await saveSiteData(); populateAdminForm(); renderAll(); return; }
+      if(action==='save-hb'){
+        const container = btn.closest('.list-item');
+        siteData.hiddenButtons[idx].label = container.querySelector('.hb-label').value;
+        siteData.hiddenButtons[idx].hiddenLink = container.querySelector('.hb-link').value;
+        await saveSiteData(); populateAdminForm(); renderAll();
+      }
+    };
+  });
+}
+
+/* Add new items */
+qs('addSectionBtn').onclick = ()=>{
+  siteData.sections = siteData.sections || [];
+  siteData.sections.push({ id:idGen(), title:"New Section", text:"Write description...", img:"" });
+  populateAdminForm();
+};
+qs('addEbookBtn').onclick = ()=>{
+  siteData.ebooks = siteData.ebooks || [];
+  siteData.ebooks.push({ id:idGen(), title:"New eBook", desc:"Short description...", hiddenLink:"" });
+  populateAdminForm();
+};
+qs('addAffiliateBtn').onclick = ()=>{
+  siteData.affiliates = siteData.affiliates || [];
+  siteData.affiliates.push({ id:idGen(), title:"Affiliate title", desc:"Short description...", hiddenLink:"" });
+  populateAdminForm();
+};
+qs('addHiddenBtn').onclick = ()=>{
+  siteData.hiddenButtons = siteData.hiddenButtons || [];
+  siteData.hiddenButtons.push({ id:idGen(), label:"Button label", hiddenLink:"" });
+  populateAdminForm();
+};
+
+/* Save entire settings (site title, intro, getClientsDesc) */
+qs('saveSettingsBtn').onclick = async ()=>{
+  siteData.title = qs('adminSiteTitle').value || siteData.title;
+  siteData.introTitle = qs('adminIntroTitle').value || siteData.introTitle;
+  siteData.introText = qs('adminIntroText').value || siteData.introText;
+  siteData.getClientsDesc = qs('adminGetClientsDesc').value || siteData.getClientsDesc;
+  await saveSiteData();
+  alert('Saved');
+  renderAll();
+};
+
+/* Export site data JSON */
+qs('exportDataBtn').onclick = ()=>{
+  const blob = new Blob([JSON.stringify(siteData, null, 2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'site-data.json'; a.click();
+};
+
+/* Clear all (reset) */
+qs('clearAllBtn').onclick = async ()=>{
+  if(!confirm('This will delete all site data (reset). Continue?')) return;
+  localStorage.removeItem('ow_siteData');
+  await db.collection('siteData').doc(SITE_DOC).set({
+    title: "Start Online Work",
+    introTitle: "How to Start Online Work",
+    introText: "Simple, practical ways for you to begin earning online — freelancing, remote jobs, and small online businesses.",
+    sections: [],
+    ebooks: [],
+    affiliates: [],
+    hiddenButtons: [],
+    getClientsDesc: "Sign up and we will send you leads and tips.",
+    adminUsername: siteData?.adminUsername || 'siteadmin',
+    adminPassword: siteData?.adminPassword || 'EDSG11486@42034318re'
+  });
+  siteData = await ensureSiteDoc();
+  populateAdminForm();
+  renderAll();
+  alert('Reset complete');
+};
+
+/* ======= STORAGE: upload section image ======= */
+async function uploadSectionImage(file, sectionId){
+  if(!file) throw new Error('No file');
+  const ext = file.name.split('.').pop();
+  const path = `sections/${sectionId}/${Date.now()}.${ext}`;
+  const ref = storage.ref().child(path);
+  const snap = await ref.put(file);
+  const url = await snap.ref.getDownloadURL();
+  return url;
+}
+
+/* ======= Save siteData to Firestore ======= */
+async function saveSiteData(){
+  try{
+    // ensure arrays exist
+    siteData.sections = siteData.sections || [];
+    siteData.ebooks = siteData.ebooks || [];
+    siteData.affiliates = siteData.affiliates || [];
+    siteData.hiddenButtons = siteData.hiddenButtons || [];
+
+    await db.collection('siteData').doc(SITE_DOC).set(siteData);
+  }catch(err){
+    console.error('saveSiteData', err);
+    throw err;
   }
+}
 
-  function renderPublicSections() {
-    let secHTML = "";
-    (siteData.sections || []).forEach(s => {
-      secHTML += `<div class="list"><h4>${s.title}</h4><p>${s.text}</p></div>`;
-    });
-    document.getElementById("sectionsContainer").innerHTML = secHTML;
+/* ======= CLIENT FORM SUBMIT ======= */
+qs('openGetClientsBtn').onclick = ()=>{ qs('clientsModal').style.display='block'; qs('clientMsg').innerText=''; qs('clientName').value=''; qs('clientEmail').value=''; qs('clientCountry').value=''; qs('clientSkills').selectedIndex=-1; };
+qs('cancelClientBtn').onclick = ()=>{ qs('clientsModal').style.display='none'; };
 
-    let ebooksHTML = "";
-    (siteData.ebooks || []).forEach(e => {
-      ebooksHTML += `<div class="list"><a href="${e.link}" target="_blank">${e.title}</a></div>`;
+qs('submitClientBtn').onclick = async ()=>{
+  const name = qs('clientName').value.trim();
+  const email = qs('clientEmail').value.trim();
+  const country = qs('clientCountry').value;
+  const skills = Array.from(qs('clientSkills').selectedOptions).map(o=>o.value).slice(0,2);
+  if(!name || !email || !country){ qs('clientMsg').innerText='Please fill name, email and country'; return; }
+  const payload = { name, email, country, skills, ts: new Date().toISOString() };
+  try{
+    await db.collection('clients').add({
+      name, email, country, skills, timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
-    document.getElementById("ebooksContainer").innerHTML = ebooksHTML;
-
-    let affHTML = "";
-    (siteData.affiliates || []).forEach(a => {
-      affHTML += `<div class="list"><a href="${a.url}" target="_blank">${a.name}</a></div>`;
-    });
-    document.getElementById("affiliatesContainer").innerHTML = affHTML;
+    qs('clientMsg').innerText = 'Thanks! Your info was submitted.';
+    setTimeout(()=>{ qs('clientsModal').style.display='none'; }, 900);
+  }catch(err){
+    console.error('submit client', err);
+    qs('clientMsg').innerText = 'Failed to submit: '+err.message;
   }
+};
 
-  // Admin login
-  document.getElementById("loginBtn").onclick = () => {
-    const user = document.getElementById("adminUser").value;
-    const pass = document.getElementById("adminPass").value;
-    if(user === siteData.adminUsername && pass === siteData.adminPassword) {
-      adminLoggedIn = true;
-      showAdmin();
-    } else {
-      alert("Invalid credentials");
-    }
-  };
-
-  function showAdmin() {
-    document.getElementById("publicSection").classList.add("hidden");
-    document.getElementById("loginSection").classList.add("hidden");
-    document.getElementById("adminSection").classList.remove("hidden");
-
-    document.getElementById("editSiteTitle").value = siteData.title;
-    document.getElementById("editIntroTitle").value = siteData.introTitle;
-    document.getElementById("editIntroText").value = siteData.introText;
-    document.getElementById("editGetClientsDesc").value = siteData.getClientsDesc;
-
-    renderAdminLists();
-  }
-
-  function renderAdminLists() {
-    let secHTML = "";
-    (siteData.sections || []).forEach((s, i) => {
-      secHTML += `<div>
-        <input value="${s.title}" onchange="siteData.sections[${i}].title=this.value">
-        <textarea onchange="siteData.sections[${i}].text=this.value">${s.text}</textarea>
-        <button onclick="deleteSection(${i})">Delete</button>
-      </div>`;
+/* ======= DOWNLOAD CLIENTS CSV ======= */
+qs('downloadClientsBtn').onclick = async ()=>{
+  try{
+    const snap = await db.collection('clients').orderBy('timestamp','desc').get();
+    let csv = 'Name,Email,Country,Skills,Timestamp\n';
+    snap.forEach(doc=>{
+      const d = doc.data();
+      const ts = d.timestamp ? (d.timestamp.toDate ? d.timestamp.toDate().toISOString() : d.timestamp) : '';
+      const row = [
+        `"${(d.name||'').replaceAll('"','""')}"`,
+        `"${(d.email||'').replaceAll('"','""')}"`,
+        `"${(d.country||'').replaceAll('"','""')}"`,
+        `"${(Array.isArray(d.skills)?d.skills.join('|'):d.skills||'').replaceAll('"','""')}"`,
+        `"${ts}"`
+      ].join(',');
+      csv += row + '\n';
     });
-    document.getElementById("adminSections").innerHTML = secHTML;
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'clients.csv'; a.click();
+  }catch(err){ alert('Failed to download clients: '+err.message); console.error(err); }
+};
 
-    let ebooksHTML = "";
-    (siteData.ebooks || []).forEach((e, i) => {
-      ebooksHTML += `<div>
-        <input value="${e.title}" onchange="siteData.ebooks[${i}].title=this.value">
-        <input value="${e.link}" onchange="siteData.ebooks[${i}].link=this.value">
-        <button onclick="deleteEbook(${i})">Delete</button>
-      </div>`;
-    });
-    document.getElementById("adminEbooks").innerHTML = ebooksHTML;
+/* ======= Export clients as JSON (optional) ======= */
+function addAdminExtras(){ // called on successful login
+  // ensure Download Clients button exists; it is already present as part of admin controls
+  // nothing extra needed here, but we could add dynamic items if necessary
+}
 
-    let affHTML = "";
-    (siteData.affiliates || []).forEach((a, i) => {
-      affHTML += `<div>
-        <input value="${a.name}" onchange="siteData.affiliates[${i}].name=this.value">
-        <input value="${a.url}" onchange="siteData.affiliates[${i}].url=this.value">
-        <button onclick="deleteAffiliate(${i})">Delete</button>
-      </div>`;
-    });
-    document.getElementById("adminAffiliates").innerHTML = affHTML;
-  }
+/* ======= LOGIN BUTTON HOOKS ======= */
+qs('openLoginBtn').onclick = ()=> showLogin();
+qs('cancelLoginBtn').onclick = ()=> closeLogin();
+qs('doLoginBtn').onclick = ()=> doLogin();
+qs('previewBtn').onclick = ()=> { qs('adminPanel').style.display='none'; renderAll(); window.scrollTo(0,0); };
 
-  function deleteSection(i) { siteData.sections.splice(i, 1); renderAdminLists(); }
-  function deleteEbook(i) { siteData.ebooks.splice(i, 1); renderAdminLists(); }
-  function deleteAffiliate(i) { siteData.affiliates.splice(i, 1); renderAdminLists(); }
+/* ======= init ======= */
+loadSite();
 
-  document.getElementById("addSection").onclick = () => {
-    siteData.sections.push({title:"New Section", text:""});
-    renderAdminLists();
-  };
-  document.getElementById("addEbook").onclick = () => {
-    siteData.ebooks.push({title:"New Ebook", link:""});
-    renderAdminLists();
-  };
-  document.getElementById("addAffiliate").onclick = () => {
-    siteData.affiliates.push({name:"New Affiliate", url:""});
-    renderAdminLists();
-  };
-
-  // Save changes
-  document.getElementById("saveChanges").onclick = () => {
-    siteData.title = document.getElementById("editSiteTitle").value;
-    siteData.introTitle = document.getElementById("editIntroTitle").value;
-    siteData.introText = document.getElementById("editIntroText").value;
-    siteData.getClientsDesc = document.getElementById("editGetClientsDesc").value;
-    db.collection("siteData").doc("main").set(siteData).then(() => {
-      alert("Changes saved!");
-      loadSite();
-    });
-  };
-
-  // Submit client form
-  document.getElementById("clientForm").onsubmit = (e) => {
-    e.preventDefault();
-    db.collection("clients").add({
-      name: document.getElementById("clientName").value,
-      email: document.getElementById("clientEmail").value,
-      country: document.getElementById("clientCountry").value,
-      skills: document.getElementById("clientSkills").value,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => {
-      alert("Client data submitted");
-      e.target.reset();
-    });
-  };
-
-  // Download clients CSV
-  document.getElementById("downloadClients").onclick = () => {
-    db.collection("clients").get().then(snapshot => {
-      let csv = "Name,Email,Country,Skills,Timestamp\n";
-      snapshot.forEach(doc => {
-        let c = doc.data();
-        csv += `${c.name},${c.email},${c.country},${c.skills},${c.timestamp?.toDate()}\n`;
-      });
-      let blob = new Blob([csv], { type: "text/csv" });
-      let url = URL.createObjectURL(blob);
-      let a = document.createElement("a");
-      a.href = url;
-      a.download = "clients.csv";
-      a.click();
-    });
-  };
-
-  loadSite();
 </script>
 </body>
 </html>
-
